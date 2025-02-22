@@ -28,17 +28,29 @@ Sm = 0.0201; % m2
 %%Variables Acoustiques
 %Sm = 0.0222; % m2
 
+%% Fonction de transfert Mec
+%Création
+s = tf('s');
+Hm = Bl/(Mm*s^2 + Rm*s + Km);
+Hm = minreal(Hm)
+%Pôles & Zéros
+
+%Diagramme de Bode
+
 %% Fonction de transfert Elec
 %Création
-
+He = 1/(Le*s+Bl*s/Hm + Re+ Rs);
+He = minreal(He)
 %Pôles & Zéros
 
 %Diagramme de Bode
 
 
 %% Fonction de transfert Electro-Acoustique
-%Création
+%Convolution?
 
+%Création
+Ha = 
 %Pôles & Zéros
 
 %Diagramme de Bode
