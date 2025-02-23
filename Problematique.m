@@ -8,7 +8,7 @@ Rs = 70; % ohm
 Bl = 10.8; % Tm
 %Variables Elec
 Re = 6.4; % ohm
-Le = 0.051e-3; % H 
+Le = 0.051e-3; % H guillome tu pu
 %Variables Mec
 Mm = 13.3e-3; % kg
 Rm = 0.5; % kg/s
