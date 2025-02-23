@@ -34,32 +34,42 @@ s = tf('s');
 Hm = Bl/(Mm*s^2 + Rm*s + Km);
 Hm = minreal(Hm)
 %Pôles & Zéros
-figure();
+figure(1)
+figure("name", "Pôles et zéros de Hm");
 pzmap(Hm);
-[z, p, k] = zpkdata(Hm, 'v')
+[m.z, m.p, m.k] = zpkdata(Hm, 'v')
 %Diagramme de Bode
+figure(2)
+figure("name", "Diagramme de Bode de Hm",'NumberTitle','off');
+bode(Hm, 0.1:0.001:100)
 
 %% Fonction de transfert Elec
 %Création
-He = 1/(Le*s+Bl*s/Hm + Re+ Rs);
+He = 1/((Le+Bl*Hm)*s + Re+ Rs);
 He = minreal(He)
 %Pôles & Zéros
-figure();
+figure(3)
+figure("name", "Pôles et zéros de He",'NumberTitle','off');
 pzmap(He);
-[z, p, k] = zpkdata(He, 'v')
+[e.z, e.p, e.k] = zpkdata(He, 'v')
 %Diagramme de Bode
-
+figure(4)
+figure("name", "Diagramme de Bode de He",'NumberTitle','off');
+bode(He, 0.1:0.001:100)
 
 %% Fonction de transfert Electro-Acoustique
 %Création
-Ha = (rho*Sm*s^2*exp(-s*d/c))/(2*pi*d*Hm*He);
+Ha = He*Hm*(rho*Sm*s^2*exp(-s*d/c))/(2*pi*d);
 Ha = minreal(Ha)
 %Pôles & Zéros
-figure();
+figure(5)
+figure("name", "Pôles et zéros de Ha",'NumberTitle','off');
 pzmap(Ha);
-[z, p, k] = zpkdata(Ha, 'v')
+[a.z, a.p, a.k] = zpkdata(Ha, 'v')
 %Diagramme de Bode
-
+figure(6)
+figure("name", "Diagramme de Bode de Ha",'NumberTitle','off');
+bode(Ha, 0.1:0.001:100)
 
 %% PWM
 %Série fournier PWM 100Hz 50% composante continue
