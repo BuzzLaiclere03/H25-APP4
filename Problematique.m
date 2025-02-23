@@ -50,7 +50,7 @@ He = minreal(He)
 %Convolution?
 
 %Création
-Ha = 
+Ha = 0;
 %Pôles & Zéros
 
 %Diagramme de Bode
