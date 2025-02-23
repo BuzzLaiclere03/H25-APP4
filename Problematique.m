@@ -34,7 +34,9 @@ s = tf('s');
 Hm = Bl/(Mm*s^2 + Rm*s + Km);
 Hm = minreal(Hm)
 %Pôles & Zéros
-
+figure();
+pzmap(Hm);
+[z, p, k] = zpkdata(Hm, 'v')
 %Diagramme de Bode
 
 %% Fonction de transfert Elec
@@ -42,17 +44,20 @@ Hm = minreal(Hm)
 He = 1/(Le*s+Bl*s/Hm + Re+ Rs);
 He = minreal(He)
 %Pôles & Zéros
-
+figure();
+pzmap(He);
+[z, p, k] = zpkdata(He, 'v')
 %Diagramme de Bode
 
 
 %% Fonction de transfert Electro-Acoustique
-%Convolution?
-
 %Création
-Ha = 0;
+Ha = (rho*Sm*s^2*exp(-s*d/c))/(2*pi*d*Hm*He);
+Ha = minreal(Ha)
 %Pôles & Zéros
-
+figure();
+pzmap(Ha);
+[z, p, k] = zpkdata(Ha, 'v')
 %Diagramme de Bode
 
 
