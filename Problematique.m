@@ -7,29 +7,29 @@ rho = 1; % kg/m3
 c = 340; % m/s
 Rs = 70; % ohm
 
-%% Variables pour Haut Parleur #1
-Bl = 10.8; % Tm
-%Variables Elec
-Re = 6.4; % ohm
-Le = 0.051e-3; % H
-%Variables Mec
-Mm = 13.3e-3; % kg
-Rm = 0.5; % kg/s
-Km = 935; % N/m
-%Variables Acoustiques
-Sm = 0.0201; % m2
-
-%%% Variables pour Haut Parleur #2
-%Bl = 4.2; % Tm
+%%% Variables pour Haut Parleur #1
+%Bl = 10.8; % Tm
 %%Variables Elec
-%Re = 3; % ohm
-%Le = 0.05e-3; % H 
+%Re = 6.4; % ohm
+%Le = 0.051e-3; % H
 %%Variables Mec
-%Mm = 10.5e-3; % kg
-%Rm = 0.48; % kg/s
-%Km = 400; % N/m
+%Mm = 13.3e-3; % kg
+%Rm = 0.5; % kg/s
+%Km = 935; % N/m
 %%Variables Acoustiques
-%Sm = 0.0222; % m2
+%Sm = 0.0201; % m2
+
+%% Variables pour Haut Parleur #2
+Bl = 4.2; % Tm
+%Variables Elec
+Re = 3; % ohm
+Le = 0.05e-3; % H 
+%Variables Mec
+Mm = 10.5e-3; % kg
+Rm = 0.48; % kg/s
+Km = 400; % N/m
+%Variables Acoustiques
+Sm = 0.0222; % m2
 
 %% Fonction de transfert Mec
 %Création
@@ -81,7 +81,7 @@ bode(Ha, (10:0.1:10000)*2*pi)
 NbHarmoniques = 10;
 k = [-NbHarmoniques:1:NbHarmoniques];
 
-Fe = 1000;% c quoi comme variable ça?
+Fe = 1000;%
 T = 0.01; % s
 dt = T/Fe;
 w0 = 2*pi/T; % rad/s
@@ -163,7 +163,7 @@ plot(t, y)
 
 %% Son percussif - Impulse
 %Création du signal
-Fe = 100e3; % Fréquence d'échantillonnage 100 kHz
+Fe = 10e6; % Fréquence d'échantillonnage 10MHz poyur résultats plus représentatifs
 Te = 1/Fe;  % Période d'échantillonnage
 t = 0:Te:0.05; % Simulation sur 50 ms
 
@@ -172,11 +172,12 @@ u = 3.3 * (t >= 0 & t <= 10e-3);
 
 %Fraction rationnelles de H electro acoustique & Laplace ^ -1
 h = 0;
-[R,P,K] = residue(Ha.Numerator{1}, Ha.Denominator{1});
-for i=1:length(P)
-    h = h+R(i)*exp(P(i)*t);
+[R1,P1,K1] = residue(Ha.Numerator{1}, Ha.Denominator{1});
+for i=1:length(P1)
+    h = h+R1(i)*exp(P1(i)*t);
 end
-
+figure(15);
+plot(t, h);
 %Convolution avec signal pour obtenir p(t)
 p_t = conv(h, u) * Te;
 t_conv = (0:length(p_t)-1) * Te; % Temps associé
@@ -190,13 +191,13 @@ ylabel("Amplitude");
 
 %% Courant Impulse
 %Fraction rationnelles de H electrique & Laplace ^ -1
-h = 0;
-[R,P,K] = residue(He.Numerator{1}, He.Denominator{1});
-for i=1:length(P)
-    h = h+R(i)*exp(P(i)*t);
+h2 = 0;
+[R2,P2,K2] = residue(He.Numerator{1}, He.Denominator{1});
+for i=1:length(P2)
+    h2 = h2+R2(i)*exp(P2(i)*t);
 end
 
-i_t = conv(h, u) * Te; % Convolution discrète (intégration par Te)
+i_t = conv(h2, u) * Te; % Convolution discrète (intégration par Te)
 t_conv = (0:length(i_t)-1) * Te; % Temps associé
 
 figure("name", "Courant du système avec Impulse")
