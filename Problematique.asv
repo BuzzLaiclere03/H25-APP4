@@ -167,6 +167,13 @@ Fe = 100e3; % Fréquence d'échantillonnage 100 kHz
 Te = 1/Fe;  % Période d'échantillonnage
 t = 0:Te:0.05; % Simulation sur 50 ms
 
+
+%Test
+dt = 0.01;
+t
+
+
+
 % Signal d'entrée : impulsion de 3.3V pendant 10 ms
 u = 3.3 * (t >= 0 & t <= 10e-3);
 
@@ -178,7 +185,7 @@ for i=1:length(P)
 end
 
 %Convolution avec signal pour obtenir p(t)
-p_t = conv(h, u) * Te;
+p_t = conv(h, u, 'same') * Te;
 t_conv = (0:length(p_t)-1) * Te; % Temps associé
 
 %Affichage
@@ -196,7 +203,7 @@ for i=1:length(P)
     h = h+R(i)*exp(P(i)*t);
 end
 
-i_t = conv(h, u) * Te; % Convolution discrète (intégration par Te)
+i_t = conv(h, u, 'same') * Te; % Convolution discrète (intégration par Te)
 t_conv = (0:length(i_t)-1) * Te; % Temps associé
 
 figure("name", "Courant du système avec Impulse")
