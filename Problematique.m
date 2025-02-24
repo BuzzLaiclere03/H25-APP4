@@ -7,29 +7,29 @@ rho = 1; % kg/m3
 c = 340; % m/s
 Rs = 70; % ohm
 
-%% Variables pour Haut Parleur #1
-Bl = 10.8; % Tm
-%Variables Elec
-Re = 6.4; % ohm
-Le = 0.051e-3; % H
-%Variables Mec
-Mm = 13.3e-3; % kg
-Rm = 0.5; % kg/s
-Km = 935; % N/m
-%Variables Acoustiques
-Sm = 0.0201; % m2
-
-%%% Variables pour Haut Parleur #2
-%Bl = 4.2; % Tm
+%%% Variables pour Haut Parleur #1
+%Bl = 10.8; % Tm
 %%Variables Elec
-%Re = 3; % ohm
-%Le = 0.05e-3; % H 
+%Re = 6.4; % ohm
+%Le = 0.051e-3; % H
 %%Variables Mec
-%Mm = 10.5e-3; % kg
-%Rm = 0.48; % kg/s
-%Km = 400; % N/m
+%Mm = 13.3e-3; % kg
+%Rm = 0.5; % kg/s
+%Km = 935; % N/m
 %%Variables Acoustiques
-%Sm = 0.0222; % m2
+%Sm = 0.0201; % m2
+
+%% Variables pour Haut Parleur #2
+Bl = 4.2; % Tm
+%Variables Elec
+Re = 3; % ohm
+Le = 0.05e-3; % H 
+%Variables Mec
+Mm = 10.5e-3; % kg
+Rm = 0.48; % kg/s
+Km = 400; % N/m
+%Variables Acoustiques
+Sm = 0.0222; % m2
 
 %% Fonction de transfert Mec
 %Création
@@ -44,7 +44,7 @@ pzmap(Hm);
 %Diagramme de Bode
 figure("name", "Diagramme de Bode de Hm");
 figure(2)
-bode(Hm, 10:0.1:10000)
+bode(Hm, (10:0.1:10000)*2*pi)
 
 %% Fonction de transfert Elec
 %Création
@@ -58,7 +58,7 @@ pzmap(He);
 %Diagramme de Bode
 figure("name", "Diagramme de Bode de He");
 figure(4)
-bode(He, 10:0.1:10000)
+bode(He, (10:0.1:10000)*2*pi)
 
 %% Fonction de transfert Electro-Acoustique
 %Création
@@ -72,13 +72,14 @@ pzmap(Ha);
 %Diagramme de Bode
 figure("name", "Diagramme de Bode de Ha");
 figure(6)
-bode(Ha, 10:0.1:10000)
+bode(Ha, (10:0.1:10000)*2*pi)
 
 %% Son continue - PWM
 %Série fournier PWM 100Hz 50% composante continue & 10 1ers harmoniques
 
 %Création du PWM
 NbHarmoniques = 10;
+k = [-NbHarmoniques:1:NbHarmoniques];
 
 Fe = 1000;
 T = 0.01; % s
@@ -88,62 +89,73 @@ t = [0:dt:T-dt];
 x = [ones(1, 500), zeros(1, 500)];
 x = x*3.3;
 
-%Composante continue
-X0 = 1/T*trapz(t, x);
-
 %fonctions de transfert harmoniques
-for k=1:NbHarmoniques
-    u(k,:) = exp(-j*k*w0*t);
+for i=1:length(k)
+    u(i,:) = exp(-j*k(i)*w0*t);
 end
 
 %Amplitudes & phases des fonctions de transfert harmoniques
-for k=1:NbHarmoniques
-    X(k) = 1/T*trapz(t, x.*u(k,:));
+for i=1:length(k)
+    X(i) = 1/T*trapz(t, x.*u(i,:));
 end
 
 %Affichage
 AMP = abs(X);
 PHASE = angle(X);
 
+for i=1:length(AMP)
+    if AMP(i) <= 0.01
+        PHASE(i) = 0;
+    end
+end
+
 figure("name", "Diagramme d'amplitude et de phase du PWM")
 figure(7)
 subplot(2, 1, 1)
-stem(0:NbHarmoniques, [abs(X0) AMP])
+stem(k, AMP)
 xlabel("Harmoniques");
 ylabel("Amplitude");
 subplot(2, 1, 2)
-stem(0:NbHarmoniques, [angle(X0) PHASE])
+stem(k, PHASE)
 xlabel("Harmoniques");
 ylabel("Phase");
 
 %Reconstruction
-y = X0;
-for k=1:NbHarmoniques
-    y = y+2*AMP(k)*cos(k*w0*t+PHASE(k));
+y = 0;
+for i=1:length(k)
+    y = y+AMP(i)*cos(k(i)*w0*t+PHASE(i));
 end
 figure("name", "Reconstruction du PWM")
 figure(8)
 plot(t, y)
 
 %Réponse Ha
-[a.mag, a.phase, l] = bode(Ha, (0:NbHarmoniques)*w0);
-AMP_p = AMP.*a.mag(2:end);
-PHASE_p = PHASE + a.phase;
-y = real(X0*a.mag(1));
-for k = 1:NbHarmoniques
-    y = y + 2*AMP_p(k) * cos(k*w0*t + PHASE_p(k));
+for i = 1:length(k)
+    H_k(i) = evalfr(Ha,j*k(i)*w0);
+end
+for i = 1:length(k)
+    Y_k(i) = X(i) * H_k(i);
+end
+
+y = 0;
+for i = 1:length(k)
+    y = y + Y_k(i)*exp(1i*k(i)*w0*t);
 end
 figure("name", "Réponse du système au PWM")
 figure(9)
 plot(t, y)
 
 %% Courant PWM
-[e.mag, e.phase, l] = bode(He, (0:NbHarmoniques)*w0);
-AMP_p = AMP.*a.mag(2:end);
-PHASE_p = PHASE + a.phase;
-y = real(X0*a.mag(1));
-for k = 1:NbHarmoniques
-    y = y + 2*AMP_p(k) * cos(k*w0*t + PHASE_p(k));
+for i = 1:length(k)
+    H_k(i) = evalfr(He,j*k(i)*w0);
+end
+for i = 1:length(k)
+    Y_k(i) = X(i) * H_k(i);
+end
+
+y = 0;
+for i = 1:length(k)
+    y = y + Y_k(i)*exp(1i*k(i)*w0*t);
 end
 figure("name", "Courant du système avec PWM")
 figure(10)
@@ -177,10 +189,15 @@ xlabel("Temps (s)");
 ylabel("Amplitude");
 
 %% Courant Impulse
-he_t = impulse(He, t); % Réponse impulsionnelle du système
+%Fraction rationnelles de H electrique & Laplace ^ -1
+h = 0;
+[R,P,K] = residue(He.Numerator{1}, He.Denominator{1});
+for i=1:length(P)
+    h = h+R(i)*exp(P(i)*t);
+end
 
-i_t = conv(u, he_t) * Te; % Convolution discrète (intégration par Te)
-t_conv = (0:length(p_t)-1) * Te; % Temps associé
+i_t = conv(u, h) * Te; % Convolution discrète (intégration par Te)
+t_conv = (0:length(i_t)-1) * Te; % Temps associé
 
 figure("name", "Courant du système avec Impulse")
 figure(12);
