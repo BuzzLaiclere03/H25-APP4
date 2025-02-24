@@ -81,12 +81,12 @@ bode(Ha, (10:0.1:10000)*2*pi)
 NbHarmoniques = 10;
 k = [-NbHarmoniques:1:NbHarmoniques];
 
-Fe = 1000;
+Fe = 1000;% c quoi comme variable ça?
 T = 0.01; % s
 dt = T/Fe;
 w0 = 2*pi/T; % rad/s
 t = [0:dt:T-dt];
-x = [ones(1, 500), zeros(1, 500)];
+x = [ones(1, Fe/2), zeros(1, Fe/2)];
 x = x*3.3;
 
 %fonctions de transfert harmoniques
@@ -177,8 +177,8 @@ for i=1:length(P)
     h = h+R(i)*exp(P(i)*t);
 end
 
-%Convolution aec signal pour obtenir p(t)
-p_t = conv(u, h) * Te;
+%Convolution avec signal pour obtenir p(t)
+p_t = conv(h, u) * Te;
 t_conv = (0:length(p_t)-1) * Te; % Temps associé
 
 %Affichage
