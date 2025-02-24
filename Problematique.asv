@@ -80,12 +80,12 @@ bode(Ha, 10:0.1:10000)
 %Création du PWM
 NbHarmoniques = 10;
 
-Fe = 1000;
+Fe = 1024;
 T = 0.01; % s
 dt = T/Fe;
 w0 = 2*pi/T; % rad/s
 t = [0:dt:T-dt];
-x = [ones(1, 500), zeros(1, 500)];
+x = [ones(1, 512), zeros(1, 512)];
 x = x*3.3;
 
 %Composante continue
@@ -109,12 +109,8 @@ figure("name", "Diagramme d'amplitude et de phase du PWM")
 figure(7)
 subplot(2, 1, 1)
 stem(0:NbHarmoniques, [abs(X0) AMP])
-xlabel("Harmoniques");
-ylabel("Amplitude");
 subplot(2, 1, 2)
 stem(0:NbHarmoniques, [angle(X0) PHASE])
-xlabel("Harmoniques");
-ylabel("Phase");
 
 %Reconstruction
 y = X0;
@@ -138,14 +134,14 @@ figure(9)
 plot(t, y)
 
 %% Courant PWM
-[e.mag, e.phase, l] = bode(He, (0:NbHarmoniques)*w0);
+[a.mag, a.phase, l] = bode(He, (0:NbHarmoniques)*w0);
 AMP_p = AMP.*a.mag(2:end);
 PHASE_p = PHASE + a.phase;
 y = real(X0*a.mag(1));
 for k = 1:NbHarmoniques
     y = y + 2*AMP_p(k) * cos(k*w0*t + PHASE_p(k));
 end
-figure("name", "Courant du système avec PWM")
+figure("name", "Courant du système au PWM")
 figure(10)
 plot(t, y)
 
@@ -170,21 +166,11 @@ p_t = conv(u, h) * Te;
 t_conv = (0:length(p_t)-1) * Te; % Temps associé
 
 %Affichage
-figure("name", "Réponse du système après Impulse")
+figure("name", "Réponse acoustique p(t) après convolution")
 figure(11);
 plot(t_conv, p_t);
 xlabel("Temps (s)");
 ylabel("Amplitude");
 
-%% Courant Impulse
-he_t = impulse(He, t); % Réponse impulsionnelle du système
 
-i_t = conv(u, he_t) * Te; % Convolution discrète (intégration par Te)
-t_conv = (0:length(p_t)-1) * Te; % Temps associé
-
-figure("name", "Courant du système avec Impulse")
-figure(12);
-plot(t_conv, i_t);
-xlabel("Temps (s)");
-ylabel("Courant");
 %% Faire le simulink
