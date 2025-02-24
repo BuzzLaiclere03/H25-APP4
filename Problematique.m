@@ -62,7 +62,7 @@ bode(He, (10:0.1:10000)*2*pi)
 
 %% Fonction de transfert Electro-Acoustique
 %Création
-Ha = He*Hm*(rho*Sm*s^2*exp(-s*d/c))/(2*pi*d);
+Ha = He*Hm*(rho*Sm*s^2*exp(-s*d/c))/(2*pi*d);%
 Ha = minreal(Ha)
 %Pôles & Zéros
 figure("name", "Pôles et zéros de Ha");
@@ -166,6 +166,7 @@ plot(t, y)
 Fe = 100e3; % Fréquence d'échantillonnage 100 kHz
 Te = 1/Fe;  % Période d'échantillonnage
 t = 0:Te:0.05; % Simulation sur 50 ms
+y_X = linspace(0,0.05,0.05/Te+1); 
 
 % Signal d'entrée : impulsion de 3.3V pendant 10 ms
 u = 3.3 * (t >= 0 & t <= 10e-3);
@@ -177,8 +178,9 @@ for i=1:length(P)
     h = h+R(i)*exp(P(i)*t);
 end
 
+
 %Convolution avec signal pour obtenir p(t)
-p_t = conv(h, u) * Te;
+p_t = conv(h(2:end), u(2:end)) * Te;%
 t_conv = (0:length(p_t)-1) * Te; % Temps associé
 
 %Affichage
@@ -196,7 +198,7 @@ for i=1:length(P)
     h = h+R(i)*exp(P(i)*t);
 end
 
-i_t = conv(u, h) * Te; % Convolution discrète (intégration par Te)
+i_t = conv(u(2:end), h(2:end)) * Te; % Convolution discrète (intégration par Te)
 t_conv = (0:length(i_t)-1) * Te; % Temps associé
 
 figure("name", "Courant du système avec Impulse")
