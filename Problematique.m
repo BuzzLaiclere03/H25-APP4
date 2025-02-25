@@ -7,29 +7,29 @@ rho = 1; % kg/m3
 c = 340; % m/s
 Rs = 70; % ohm
 
-%%% Variables pour Haut Parleur #1
-%Bl = 10.8; % Tm
-%%Variables Elec
-%Re = 6.4; % ohm
-%Le = 0.051e-3; % H
-%%Variables Mec
-%Mm = 13.3e-3; % kg
-%Rm = 0.5; % kg/s
-%Km = 935; % N/m
-%%Variables Acoustiques
-%Sm = 0.0201; % m2
-
-%% Variables pour Haut Parleur #2
-Bl = 4.2; % Tm
+%% Variables pour Haut Parleur #1
+Bl = 10.8; % Tm
 %Variables Elec
-Re = 3; % ohm
-Le = 0.05e-3; % H 
+Re = 6.4; % ohm
+Le = 0.051e-3; % H
 %Variables Mec
-Mm = 10.5e-3; % kg
-Rm = 0.48; % kg/s
-Km = 400; % N/m
+Mm = 13.3e-3; % kg
+Rm = 0.5; % kg/s
+Km = 935; % N/m
 %Variables Acoustiques
-Sm = 0.0222; % m2
+Sm = 0.0201; % m2
+
+%%% Variables pour Haut Parleur #2
+%Bl = 4.2; % Tm
+%%Variables Elec
+%Re = 3; % ohm
+%Le = 0.05e-3; % H 
+%%Variables Mec
+%Mm = 10.5e-3; % kg
+%Rm = 0.48; % kg/s
+%Km = 400; % N/m
+%%Variables Acoustiques
+%Sm = 0.0222; % m2
 
 %% Fonction de transfert Mec
 %Création
@@ -163,13 +163,17 @@ plot(t, y)
 
 %% Son percussif - Impulse
 %Création du signal
-Fe = 100e3; % Fréquence d'échantillonnage 100 kHz
+Fe = 100e4; % Fréquence d'échantillonnage 100 kHz
 Te = 1/Fe;  % Période d'échantillonnage
 t = 0:Te:0.05; % Simulation sur 50 ms
+tt = 0:Te:0.05; % Simulation sur 50 ms
 y_X = linspace(0,0.05,0.05/Te+1); 
 
+%Dirac fait chier en tabarnak
+%Dick_offset = zeros(1,5001);
+Dick_offset = 1 * (tt > (d/c));
 % Signal d'entrée : impulsion de 3.3V pendant 10 ms
-u = 3.3 * (t >= 0 & t <= 10e-3);
+u = 3.3 * (tt >= 0 & tt <= 10e-3);
 
 %Fraction rationnelles de H electro acoustique & Laplace ^ -1
 h = 0;
@@ -177,16 +181,18 @@ h = 0;
 for i=1:length(P)
     h = h+R(i)*exp(P(i)*t);
 end
-
-
+h = Dick_offset .* h;
+test = impulse(Ha, t);
+plot(t, test)
 %Convolution avec signal pour obtenir p(t)
-p_t = conv(h(2:end), u(2:end)) * Te;%
+p_t = conv(h, u) * Te;%
 t_conv = (0:length(p_t)-1) * Te; % Temps associé
 
 %Affichage
 figure("name", "Réponse du système après Impulse")
 figure(11);
 plot(t_conv, p_t);
+%plot(t_conv, p_t);
 xlabel("Temps (s)");
 ylabel("Amplitude");
 
@@ -198,7 +204,7 @@ for i=1:length(P)
     h = h+R(i)*exp(P(i)*t);
 end
 
-i_t = conv(u(2:end), h(2:end)) * Te; % Convolution discrète (intégration par Te)
+i_t = conv(u, h) * Te; % Convolution discrète (intégration par Te)
 t_conv = (0:length(i_t)-1) * Te; % Temps associé
 
 figure("name", "Courant du système avec Impulse")
